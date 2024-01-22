@@ -24,7 +24,7 @@ type Result struct {
 }
 
 var DuckDuckGoDomains = map[string]string{
-	"us": "https://www.google.com/search",
+	"us": "https://www.duckduckgo.com",
 }
 
 type SearchOptions struct {
