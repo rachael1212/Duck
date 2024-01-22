@@ -4,6 +4,9 @@ import (
         "context"
         "errors"
         "fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
         "github.com/gocolly/colly/v2"
         "github.com/gocolly/colly/v2/proxy"
         "golang.org/x/time/rate"
@@ -24,7 +27,7 @@ type Result struct {
 }
 
 var DuckDuckGoDomains = map[string]string{
-	"us": "https://www.duckduckgo.com/search",
+	"us": "https://api.duckduckgo.com/?q=%s&format=json",
 }
 
 type SearchOptions struct {
@@ -39,6 +42,22 @@ type SearchOptions struct {
         //OverLimit bool
 
         ProxyAddr string
+}
+
+func searchDuckDuckGo(ctx context.Context, searchTerm string) ([]byte, error) {
+	url := fmt.Sprintf("https://api.duckduckgo.com/?q=%s&format=json", searchTerm)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Result, error) {
@@ -69,6 +88,9 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 
         results := []Result{}
         var rErr error
+
+	// Call the searchDuckDuckGo function directly
+	return searchDuckDuckGo(ctx, searchTerm)
 
         c.OnRequest(func(r *colly.Request) {
 
