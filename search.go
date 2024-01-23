@@ -4,13 +4,11 @@ import (
         "context"
         "errors"
         "fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
         "github.com/gocolly/colly/v2"
         "github.com/gocolly/colly/v2/proxy"
         "golang.org/x/time/rate"
         "math/rand"
+	"net/http"
         "strings"
 )
 
@@ -27,7 +25,7 @@ type Result struct {
 }
 
 var DuckDuckGoDomains = map[string]string{
-	"us": "https://api.duckduckgo.com/?q=%s&format=json",
+	"us": "https://duckduckgo.com/?t=h_&q=",
 }
 
 type SearchOptions struct {
@@ -44,27 +42,45 @@ type SearchOptions struct {
         ProxyAddr string
 }
 
-func searchDuckDuckGo(ctx context.Context, searchTerm string) ([]byte, error) {
-	url := fmt.Sprintf("https://api.duckduckgo.com/?q=%s&format=json", searchTerm)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
 
 func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Result, error) {
 
         if ctx == nil {
                 ctx = context.Background()
         }
+
+	func buildDuckDuckGoURL(searchTerm string) string {
+	searchTerm = strings.ReplaceAll(searchTerm, " ", "+")
+	return fmt.Sprintf("https://duckduckgo.com/html/?q=%s", searchTerm)
+}
+
+	url := buildDuckDuckGoURL(searchTerm)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusTooManyRequests {
+		return nil, ErrBlocked
+	}
+
+	var searchResponse struct {
+		Results []Result `json:"Results"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&searchResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return searchResponse.Results, nil
+}
+
 
         if err := RateLimit.Wait(ctx); err != nil {
                 return nil, err
@@ -88,9 +104,6 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 
         results := []Result{}
         var rErr error
-
-	// Call the searchDuckDuckGo function directly
-	return searchDuckDuckGo(ctx, searchTerm)
 
         c.OnRequest(func(r *colly.Request) {
 
