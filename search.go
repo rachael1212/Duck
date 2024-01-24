@@ -43,16 +43,16 @@ type SearchOptions struct {
         ProxyAddr string
 }
 
+func buildDuckDuckGoURL(searchTerm string) string {
+	searchTerm = strings.ReplaceAll(searchTerm, " ", "+")
+	return fmt.Sprintf("https://duckduckgo.com/html/?q=%s", searchTerm)
+}
 
 func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Result, error) {
-	if ctx == nil {
-		ctx = context.Background()
-	}
 
-	buildDuckDuckGoURL := func(searchTerm string) string {
-		searchTerm = strings.ReplaceAll(searchTerm, " ", "+")
-		return fmt.Sprintf("https://duckduckgo.com/html/?q=%s", searchTerm)
-	}
+        if ctx == nil {
+                ctx = context.Background()
+        }
 
 	url := buildDuckDuckGoURL(searchTerm)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -206,29 +206,30 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 }
 
 func url(searchTerm string, countryCode string, languageCode string, limit int, start int) string {
-	searchTerm = strings.Trim(searchTerm, " ")
-	searchTerm = strings.Replace(searchTerm, " ", "+", -1)
-	countryCode = strings.ToLower(countryCode)
 
-	var url string
+        searchTerm = strings.Trim(searchTerm, " ")
+        searchTerm = strings.Replace(searchTerm, " ", "+", -1)
+        countryCode = strings.ToLower(countryCode)
 
-	if duckduckgoBase, found := DuckDuckGoDomains[countryCode]; found {
+        var url string
+
+        if duckduckgoBase, found := DuckDuckGoDomains[countryCode]; found {
                 if start == 0 {
-			url = fmt.Sprintf("%s%s&hl=%s", duckduckgoBase, searchTerm, languageCode)
-		} else {
-			url = fmt.Sprintf("%s%s&hl=%s&start=%d", duckduckgoBase, searchTerm, languageCode, start)
-		}
-	} else {
-		if start == 0 {
-			url = fmt.Sprintf("%s%s&hl=%s", DuckDuckGoDomains["us"], searchTerm, languageCode)
-		} else {
-			url = fmt.Sprintf("%s%s&hl=%s&start=%d", DuckDuckGoDomains["us"], searchTerm, languageCode, start)
-		}
-	}
+                        url = fmt.Sprintf("%s%s&hl=%s", duckduckgoBase, searchTerm, languageCode)
+                } else {
+                        url = fmt.Sprintf("%s%s&hl=%s&start=%d", duckduckgoBase, searchTerm, languageCode, start)
+                }
+        } else {
+                if start == 0 {
+                        url = fmt.Sprintf("%s%s&hl=%s", DuckDuckGoDomains["us"], searchTerm, languageCode)
+                } else {
+                        url = fmt.Sprintf("%s%s&hl=%s&start=%d", DuckDuckGoDomains["us"], searchTerm, languageCode, start)
+                }
+        }
 
-	if limit != 0 {
-		url = fmt.Sprintf("%s&num=%d", url, limit)
-	}
+        if limit != 0 {
+                url = fmt.Sprintf("%s&num=%d", url, limit)
+        }
 
-	return url
+        return url
 }
