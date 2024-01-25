@@ -42,6 +42,9 @@ type SearchOptions struct {
 func DuckDuckGoDomains(searchTerm string) (string, error) {
 	ctx := context.Background()
 
+	searchTerm = strings.Trim(searchTerm, " ")
+	searchTerm = strings.Replace(searchTerm, " ", "+", -1)
+
 	// Construct the URL for the custom HTTP request to DuckDuckGo
 	url := fmt.Sprintf("https://duckduckgo.com/html/?q=%s", searchTerm)
 
@@ -202,7 +205,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
         }
 
 	// Return the search results
-        return results, nil
+        return []string{results}, nil
 }
 
 func url(searchTerm string, countryCode string, languageCode string, limit int, start int) string {
