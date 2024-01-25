@@ -10,7 +10,6 @@ import (
         "math/rand"
         "strings"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -24,10 +23,6 @@ type Result struct {
         Title string `json:"title"`
 
         Description string `json:"description"`
-}
-
-var DuckDuckGoDomains = map[string]string{
-	"us": "https://duckduckgo.com/?t=h_&q=",
 }
 
 type SearchOptions struct {
@@ -103,14 +98,12 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
         }
 
 	// Perform the search using DuckDuckGo custom HTTP request
-	searchResult, err := DuckDuckGoDomains(searchTerm)
+	results, err := DuckDuckGoDomains(searchTerm)
 	if err != nil {
 		return nil, err
 	}
 
-        results := []Result{}
-        var rErr error
-
+      
         c.OnRequest(func(r *colly.Request) {
 
                 if opts[0].ProxyAddr != "" {
