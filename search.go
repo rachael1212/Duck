@@ -39,11 +39,8 @@ type SearchOptions struct {
         ProxyAddr string
 }
 
-func DuckDuckGoDomains(searchTerm string) (string, error) {
+func DuckDuckGoDomains(searchTerm string) ([]Result, error) {
 	ctx := context.Background()
-
-	searchTerm = strings.Trim(searchTerm, " ")
-	searchTerm = strings.Replace(searchTerm, " ", "+", -1)
 
 	// Construct the URL for the custom HTTP request to DuckDuckGo
 	url := fmt.Sprintf("https://duckduckgo.com/html/?q=%s", searchTerm)
@@ -71,7 +68,7 @@ func DuckDuckGoDomains(searchTerm string) (string, error) {
 	}
 
 	// Return the response body as a string
-	return string(body), nil
+	return results, nil
 }
 
 func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Result, error) {
@@ -156,6 +153,9 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 
         })
 
+	 // Initialize the results variable as an empty slice
+ 	   results := make([]Result, 0)
+
         c.OnHTML("div.g", func(e *colly.HTMLElement) {
                 sel := e.DOM
 
@@ -205,7 +205,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
         }
 
 	// Return the search results
-        return []string{results}, nil
+        return results, nil
 }
 
 func url(searchTerm string, countryCode string, languageCode string, limit int, start int) string {
