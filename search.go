@@ -48,7 +48,7 @@ func DuckDuckGoDomains(searchTerm string) ([]Result, error) {
 	// Make the HTTP request
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Set any necessary headers or parameters
@@ -57,14 +57,14 @@ func DuckDuckGoDomains(searchTerm string) ([]Result, error) {
 	// Perform the request
 	resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Return the response body as a string
@@ -130,6 +130,8 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
                 //r.Headers.Set("upgrade-insecure-requests", "1")
 
                 r.Headers.Set("User-Agent", uaGens[rand.Intn(len(uaGens))]())
+
+		var rErr error
 
                 if err := ctx.Err(); err != nil {
                         r.Abort()
