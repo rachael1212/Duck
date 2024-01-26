@@ -103,6 +103,8 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		return nil, err
 	}
 
+	results := []Result{}
+        var rErr error
       
         c.OnRequest(func(r *colly.Request) {
 
@@ -130,8 +132,6 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
                 //r.Headers.Set("upgrade-insecure-requests", "1")
 
                 r.Headers.Set("User-Agent", uaGens[rand.Intn(len(uaGens))]())
-
-		var rErr error
 
                 if err := ctx.Err(); err != nil {
                         r.Abort()
