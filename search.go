@@ -68,7 +68,7 @@ func DuckDuckGoDomains(searchTerm string) ([]Result, error) {
 	}
 
 	// Return the response body as a string
-	return results, nil
+	return []Result{}, nil
 }
 
 func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Result, error) {
@@ -103,7 +103,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
 		return nil, err
 	}
 
-	results := []Result{}
+	
         var rErr error
       
         c.OnRequest(func(r *colly.Request) {
@@ -207,7 +207,7 @@ func Search(ctx context.Context, searchTerm string, opts ...SearchOptions) ([]Re
         }
 
 	// Return the search results
-        return results, nil
+        return []Result{}, nil
 }
 
 func url(searchTerm string, countryCode string, languageCode string, limit int, start int) string {
